@@ -1,5 +1,4 @@
-﻿using System.Net;
-using System.Net.Mime;
+﻿using System.Threading.Tasks;
 using BusinessLogic;
 using FluentAssertions;
 using Moq;
@@ -10,50 +9,50 @@ namespace Tests
     public class SpeakerTests
     {
         [Test]
-        public void ShiftToSpeaker()
+        public async Task ShiftToSpeaker()
         {
             var content = new Mock<IContent>().Object;
             var connectionMock = new Mock<IConnection>();
             var connection = connectionMock.Object;
-            var otherSpeaker = new Speaker("Speaker2", connection);
-            var testee = new Speaker("Speaker1", connection);
-            connectionMock.Setup(x => x.GetPowerState(otherSpeaker)).Returns(PowerState.TurnedOn);
-            connectionMock.Setup(x => x.GetCurrentContent(otherSpeaker)).Returns(content);
-            connectionMock.Setup(x => x.GetCurrentContent(testee)).Returns(content);
-            testee.Play(content);
-            
-            testee.ShiftToSpeaker(otherSpeaker);
+            var otherSpeaker = new Speaker("Speaker2", "127.0.0.1", connection);
+            var testee = new Speaker("Speaker1", "127.0.0.1", connection);
+            connectionMock.Setup(x => x.GetPowerStateAsync(otherSpeaker)).ReturnsAsync(PowerState.TurnedOn);
+            connectionMock.Setup(x => x.GetCurrentContentAsync(otherSpeaker)).ReturnsAsync(content);
+            connectionMock.Setup(x => x.GetCurrentContentAsync(testee)).ReturnsAsync(content);
+            await testee.PlayAsync(content);
+
+            await testee.ShiftToSpeakerAsync(otherSpeaker);
 
             otherSpeaker.PowerState.Should().Be(PowerState.TurnedOn);
             otherSpeaker.IsPlaying.Should().BeTrue();
             otherSpeaker.CurrentlyPlaying.Should().Be(content);
             testee.PowerState.Should().Be(PowerState.TurnedOff);
-            connectionMock.Verify(x=>x.Play(otherSpeaker, content), Times.Once);
+            connectionMock.Verify(x => x.PlayAsync(otherSpeaker, content), Times.Once);
         }
 
         [Test]
-        public void TurnOff()
+        public async Task TurnOff()
         {
             var connectionMock = new Mock<IConnection>();
-            var testee = new Speaker("Speaker1", connectionMock.Object);
+            var testee = new Speaker("Speaker1", "127.0.0.1", connectionMock.Object);
 
-            testee.TurnOff();
+            await testee.TurnOffAsync();
 
-            connectionMock.Verify(x=>x.TurnOff(testee), Times.Once);
+            connectionMock.Verify(x => x.TurnOffAsync(testee), Times.Once);
             testee.PowerState.Should().Be(PowerState.TurnedOff);
         }
 
         [Test]
-        public void Play()
+        public async Task Play()
         {
             var content = new Mock<IContent>().Object;
             var connectionMock = new Mock<IConnection>();
-            var testee = new Speaker("Speaker1", connectionMock.Object);
-            connectionMock.Setup(x => x.GetCurrentContent(testee)).Returns(content);
-            
-            testee.Play(content);
+            var testee = new Speaker("Speaker1", "127.0.0.1", connectionMock.Object);
+            connectionMock.Setup(x => x.GetCurrentContentAsync(testee)).ReturnsAsync(content);
 
-            connectionMock.Verify(x=>x.Play(testee, content), Times.Once);
+            await testee.PlayAsync(content);
+
+            connectionMock.Verify(x => x.PlayAsync(testee, content), Times.Once);
             testee.CurrentlyPlaying.Should().Be(content);
             testee.IsPlaying.Should().BeTrue();
         }

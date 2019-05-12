@@ -1,40 +1,49 @@
-﻿using System.Runtime.InteropServices.ComTypes;
+﻿using System.Threading.Tasks;
 
 namespace BusinessLogic
 {
     public class Speaker : ISpeaker
     {
-        public string Name { get; }
-
-        public Speaker(string name, IConnection connection)
+        public Speaker(string name, string ipAddress, IConnection connection)
         {
             Name = name;
+            IpAddress = ipAddress;
             Connection = connection;
         }
 
-        public void ShiftToSpeaker(ISpeaker otherSpeaker)
-        {
-            otherSpeaker.Play(CurrentlyPlaying);
+        public string Name { get; }
 
-            TurnOff();
-        }
-
-        public void TurnOff()
-        {
-            Connection.TurnOff(this);
-        }
-
-        private IConnection Connection { get; }
-
-        public PowerState PowerState => Connection.GetPowerState(this);
+        public Task<PowerState> PowerState => Connection.GetPowerStateAsync(this);
 
         public bool IsPlaying => CurrentlyPlaying != null;
 
-        public IContent CurrentlyPlaying => Connection.GetCurrentContent(this);
+        public Task<IContent> CurrentlyPlaying => Connection.GetCurrentContentAsync(this);
 
-        public void Play(IContent content)
+        public string IpAddress { get; }
+
+        private IConnection Connection { get; }
+
+        public async Task ShiftToSpeakerAsync(ISpeaker otherSpeaker)
         {
-            Connection.Play(this, content);
+            await otherSpeaker.PlayAsync(await CurrentlyPlaying);
+
+            await TurnOffAsync();
+        }
+
+        public async Task TurnOffAsync()
+        {
+            await Connection.TurnOffAsync(this);
+        }
+
+        public async Task PlayAsync(IContent content)
+        {
+            await Connection.PlayAsync(this, content);
+        }
+
+        /// <inheritdoc />
+        public override string ToString()
+        {
+            return Name;
         }
     }
 }

@@ -1,13 +1,23 @@
-﻿namespace BusinessLogic
+﻿using System.Threading.Tasks;
+
+namespace BusinessLogic
 {
-    public interface ISpeaker:IDevice
+    public interface ISpeaker
     {
         string Name { get; }
-        PowerState PowerState { get; }
+
+        Task<PowerState> PowerState { get; }
+
         bool IsPlaying { get; }
-        IContent CurrentlyPlaying { get; }
-        void ShiftToSpeaker(ISpeaker otherSpeaker);
-        void TurnOff();
-        void Play(IContent content);
+
+        Task<IContent> CurrentlyPlaying { get; }
+
+        string IpAddress { get; }
+
+        Task ShiftToSpeakerAsync(ISpeaker otherSpeaker);
+
+        Task TurnOffAsync();
+
+        Task PlayAsync(IContent content);
     }
 }
