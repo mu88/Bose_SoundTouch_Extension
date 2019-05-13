@@ -28,7 +28,10 @@ namespace BoseSoundTouchExtension
 
         public override bool OnCreateOptionsMenu(IMenu menu)
         {
-            MenuInflater.Inflate(Resource.Menu.menu_main, menu);
+            // If the following line is enabled, the 'Options menu indicator' (three-dot indicator) will be shown
+            // Since this is not needed yet, it can be disabled.
+            //MenuInflater.Inflate(Resource.Menu.menu_main, menu);
+            
             return true;
         }
 
