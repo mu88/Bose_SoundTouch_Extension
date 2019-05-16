@@ -1,6 +1,7 @@
-﻿using System;
-using System.Net.Http;
+﻿using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
 
 namespace BusinessLogic
 {
@@ -14,27 +15,45 @@ namespace BusinessLogic
         private HttpClient HttpClient { get; }
 
         /// <inheritdoc />
-        public Task TurnOffAsync(ISpeaker speaker)
+        public async Task TurnOffAsync(ISpeaker speaker)
         {
-            throw new NotImplementedException();
+            await HttpClient.PostAsync($"http://{speaker.IpAddress}:8090/key",
+                                       new StringContent("<key state=\"press\" sender=\"Gabbo\">POWER</key>"));
+
+            await HttpClient.PostAsync($"http://{speaker.IpAddress}:8090/key",
+                                       new StringContent("<key state=\"release\" sender=\"Gabbo\">POWER</key>"));
         }
 
         /// <inheritdoc />
-        public Task<PowerState> GetPowerStateAsync(ISpeaker speaker)
+        public async Task<PowerState> GetPowerStateAsync(ISpeaker speaker)
         {
-            throw new NotImplementedException();
+            var rawXmlResponse = await HttpClient.GetStringAsync($"http://{speaker.IpAddress}:8090/now_playing");
+
+            return rawXmlResponse.Contains("source=\"STANDBY\"") ? PowerState.TurnedOff : PowerState.TurnedOn;
         }
 
         /// <inheritdoc />
-        public Task PlayAsync(ISpeaker speaker, IContent content)
+        public async Task PlayAsync(ISpeaker speaker, IContent content)
         {
-            throw new NotImplementedException();
+            var httpResponseMessage = await HttpClient.PostAsync($"http://{speaker.IpAddress}:8090/select",
+                                                                 new StringContent(content.RawContent, Encoding.UTF8, "text/xml"));
         }
 
         /// <inheritdoc />
-        public Task<IContent> GetCurrentContentAsync(ISpeaker speaker)
+        public async Task<IContent> GetCurrentContentAsync(ISpeaker speaker)
         {
-            throw new NotImplementedException();
+            var rawXmlString = await HttpClient.GetStringAsync($"http://{speaker.IpAddress}:8090/now_playing");
+            
+            var xmlDocument = new XmlDocument();
+            xmlDocument.LoadXml(rawXmlString);
+
+            var xmlElement = xmlDocument["nowPlaying"];
+            var element = xmlElement["ContentItem"];
+
+            var elementInnerXml = element.InnerXml;
+            var elementOuterXml = element.OuterXml;
+
+            return new Content(elementOuterXml);
         }
     }
 }
