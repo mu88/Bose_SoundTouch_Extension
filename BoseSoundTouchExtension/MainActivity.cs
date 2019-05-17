@@ -94,7 +94,7 @@ namespace BoseSoundTouchExtension
 
             MakeControlVisible(Resource.Id.destinationTextView);
 
-            SelectedSourceSpeaker = Speakers.ElementAt(e.Position);
+            SelectedSourceSpeaker = selectedPlayingSpeaker;
 
             SetListViewContent(Resource.Id.destinationListView, DestinationSpeakers);
             UnselectListView(Resource.Id.destinationListView);
@@ -105,6 +105,15 @@ namespace BoseSoundTouchExtension
             ShowProgressBar();
 
             Speakers = (await SpeakerResolver.ResolveSpeakersAsync()).ToList();
+
+            if (!Speakers.Any())
+            {
+                HideProgressBar();
+
+                Toast.MakeText(ApplicationContext, "No Speakers have been found.", ToastLength.Long).Show();
+
+                return;
+            }
 
             PlayingSpeakers = new List<ISpeaker>();
             foreach (var speaker in Speakers)
@@ -117,6 +126,11 @@ namespace BoseSoundTouchExtension
 
             if (!PlayingSpeakers.Any())
             {
+                HideProgressBar();
+
+                Toast.MakeText(ApplicationContext, $"None of the {Speakers.Count} Speakers is playing any content.", ToastLength.Long)
+                     .Show();
+
                 return;
             }
 
@@ -185,7 +199,7 @@ namespace BoseSoundTouchExtension
             await SelectedSourceSpeaker.ShiftToSpeakerAsync(SelectedDestinationSpeaker);
 
             HideProgressBar();
-            
+
             await LoadAsync();
         }
     }

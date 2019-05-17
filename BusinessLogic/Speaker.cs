@@ -77,13 +77,11 @@ namespace BusinessLogic
 
         public async Task ShiftToSpeakerAsync(ISpeaker otherSpeaker)
         {
-            await Task.Delay(10000); // TODO mu88: Analyze bug
-
-            var content = await CurrentlyPlayingAsync();
-
-            await otherSpeaker.PlayAsync(content);
+            await otherSpeaker.PlayAsync(await CurrentlyPlayingAsync());
             
             await TurnOffAsync();
+
+            await Task.Delay(1000); // to make sure that the other speaker has initialized itself successfully
         }
 
         public async Task TurnOffAsync()
