@@ -40,21 +40,6 @@ namespace BusinessLogic
         /// <inheritdoc />
         public async Task PlayAsync(ISpeaker speaker, IContent content)
         {
-            if (HttpClient == null)
-            {
-                return;
-            }
-
-            if (speaker == null)
-            {
-                return;
-            }
-
-            if (content == null)
-            {
-                return;
-            }
-
             await HttpClient.PostAsync($"http://{speaker.IpAddress}:8090/select",
                                        new StringContent(content.RawContent, Encoding.UTF8, "text/xml"));
         }

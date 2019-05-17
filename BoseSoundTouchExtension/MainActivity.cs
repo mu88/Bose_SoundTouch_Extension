@@ -60,6 +60,7 @@ namespace BoseSoundTouchExtension
             SetSupportActionBar(toolbar);
 
             FindViewById<Button>(Resource.Id.switchButton).Click += SwitchButtonOnClick;
+            FindViewById<Button>(Resource.Id.loadButton).Click += LoadButtonOnClick;
             FindViewById<ListView>(Resource.Id.sourceListView).ItemClick += SourceListViewOnItemClick;
             FindViewById<ListView>(Resource.Id.destinationListView).ItemClick += DestinationListViewOnItemClick;
             FindViewById<ProgressBar>(Resource.Id.progressBar1).Indeterminate = true;
@@ -70,6 +71,11 @@ namespace BoseSoundTouchExtension
             MakeControlInvisible(Resource.Id.progressBar1);
 
             LoadAsync();
+        }
+
+        private async void LoadButtonOnClick(object sender, EventArgs e)
+        {
+            await LoadAsync();
         }
 
         private void DestinationListViewOnItemClick(object sender, AdapterView.ItemClickEventArgs e)
@@ -96,7 +102,7 @@ namespace BoseSoundTouchExtension
 
         private async Task LoadAsync()
         {
-            MakeControlVisible(Resource.Id.progressBar1);
+            ShowProgressBar();
 
             Speakers = (await SpeakerResolver.ResolveSpeakersAsync()).ToList();
 
@@ -123,7 +129,33 @@ namespace BoseSoundTouchExtension
 
             SetListViewContent(Resource.Id.destinationListView, new List<ISpeaker>());
 
+            HideProgressBar();
+        }
+
+        private void ShowProgressBar()
+        {
+            MakeControlVisible(Resource.Id.progressBar1);
+
+            DisableControl(Resource.Id.loadButton);
+            DisableControl(Resource.Id.switchButton);
+        }
+
+        private void HideProgressBar()
+        {
             MakeControlInvisible(Resource.Id.progressBar1);
+
+            EnableControl(Resource.Id.loadButton);
+            EnableControl(Resource.Id.switchButton);
+        }
+
+        private void DisableControl(int controlId)
+        {
+            FindViewById(controlId).Enabled = false;
+        }
+
+        private void EnableControl(int controlId)
+        {
+            FindViewById(controlId).Enabled = true;
         }
 
         private void UnselectListView(int controlId)
@@ -148,11 +180,11 @@ namespace BoseSoundTouchExtension
 
         private async void SwitchButtonOnClick(object sender, EventArgs e)
         {
-            MakeControlVisible(Resource.Id.progressBar1);
+            ShowProgressBar();
 
             await SelectedSourceSpeaker.ShiftToSpeakerAsync(SelectedDestinationSpeaker);
 
-            MakeControlInvisible(Resource.Id.progressBar1);
+            HideProgressBar();
             
             await LoadAsync();
         }
