@@ -26,12 +26,14 @@ namespace BoseSoundTouchExtension
 
         private ISpeaker SelectedSourceSpeaker { get; set; }
 
+        private List<ISpeaker> PlayingSpeakers { get; set; }
+
         public override bool OnCreateOptionsMenu(IMenu menu)
         {
             // If the following line is enabled, the 'Options menu indicator' (three-dot indicator) will be shown
             // Since this is not needed yet, it can be disabled.
             //MenuInflater.Inflate(Resource.Menu.menu_main, menu);
-            
+
             return true;
         }
 
@@ -57,66 +59,102 @@ namespace BoseSoundTouchExtension
             var toolbar = FindViewById<Toolbar>(Resource.Id.toolbar);
             SetSupportActionBar(toolbar);
 
-            var switchButton = FindViewById<Button>(Resource.Id.switchButton);
-            switchButton.Click += SwitchButtonOnClick;
-            switchButton.Visibility = ViewStates.Invisible;
-
-            var loadButton = FindViewById<Button>(Resource.Id.loadButton);
-            loadButton.Click += LoadButtonOnClick;
-
+            FindViewById<Button>(Resource.Id.switchButton).Click += SwitchButtonOnClick;
             FindViewById<ListView>(Resource.Id.sourceListView).ItemClick += SourceListViewOnItemClick;
             FindViewById<ListView>(Resource.Id.destinationListView).ItemClick += DestinationListViewOnItemClick;
+            FindViewById<ProgressBar>(Resource.Id.progressBar1).Indeterminate = true;
 
-            FindViewById<TextView>(Resource.Id.sourceTextView).Visibility = ViewStates.Invisible;
-            FindViewById<TextView>(Resource.Id.destinationTextView).Visibility = ViewStates.Invisible;
+            MakeControlInvisible(Resource.Id.sourceTextView);
+            MakeControlInvisible(Resource.Id.destinationTextView);
+            MakeControlInvisible(Resource.Id.switchButton);
+            MakeControlInvisible(Resource.Id.progressBar1);
+
+            LoadAsync();
         }
 
         private void DestinationListViewOnItemClick(object sender, AdapterView.ItemClickEventArgs e)
         {
             SelectedDestinationSpeaker = DestinationSpeakers.ElementAt(e.Position);
 
-            FindViewById<TextView>(Resource.Id.switchButton).Visibility = ViewStates.Visible;
+            MakeControlVisible(Resource.Id.switchButton);
         }
 
         private void SourceListViewOnItemClick(object sender, AdapterView.ItemClickEventArgs e)
         {
-            DestinationSpeakers = Speakers.Where((device, indexOfCurrentDevice) => indexOfCurrentDevice != e.Position).ToList();
+            var selectedPlayingSpeaker =
+                PlayingSpeakers.Where((device, indexOfCurrentDevice) => indexOfCurrentDevice == e.Position).First();
 
-            FindViewById<TextView>(Resource.Id.destinationTextView).Visibility = ViewStates.Visible;
+            DestinationSpeakers = Speakers.Where(x => !Equals(x, selectedPlayingSpeaker)).ToList();
+
+            MakeControlVisible(Resource.Id.destinationTextView);
 
             SelectedSourceSpeaker = Speakers.ElementAt(e.Position);
 
-            var destinationListView = FindViewById<ListView>(Resource.Id.destinationListView);
-            destinationListView.Adapter = new ArrayAdapter<ISpeaker>(this, Android.Resource.Layout.SimpleListItem1, DestinationSpeakers);
-            destinationListView.Selected = false;
+            SetListViewContent(Resource.Id.destinationListView, DestinationSpeakers);
+            UnselectListView(Resource.Id.destinationListView);
         }
 
-        private async void LoadButtonOnClick(object sender, EventArgs e)
+        private async Task LoadAsync()
         {
-            await LoadSpeakersAsync();
+            MakeControlVisible(Resource.Id.progressBar1);
 
-            var sourceListView = FindViewById<ListView>(Resource.Id.sourceListView);
-            sourceListView.Adapter = new ArrayAdapter<ISpeaker>(this, Android.Resource.Layout.SimpleListItem1, Speakers);
-            sourceListView.Selected = false;
-
-            FindViewById<TextView>(Resource.Id.sourceTextView).Visibility = ViewStates.Visible;
-
-            FindViewById<TextView>(Resource.Id.destinationTextView).Visibility = ViewStates.Invisible;
-
-            FindViewById<TextView>(Resource.Id.switchButton).Visibility = ViewStates.Invisible;
-
-            var destinationListView = FindViewById<ListView>(Resource.Id.destinationListView);
-            destinationListView.Adapter = new ArrayAdapter<ISpeaker>(this, Android.Resource.Layout.SimpleListItem1, new List<ISpeaker>());
-        }
-
-        private async Task LoadSpeakersAsync()
-        {
             Speakers = (await SpeakerResolver.ResolveSpeakersAsync()).ToList();
+
+            PlayingSpeakers = new List<ISpeaker>();
+            foreach (var speaker in Speakers)
+            {
+                if (await speaker.IsPlayingAsync())
+                {
+                    PlayingSpeakers.Add(speaker);
+                }
+            }
+
+            if (!PlayingSpeakers.Any())
+            {
+                return;
+            }
+
+            SetListViewContent(Resource.Id.sourceListView, PlayingSpeakers);
+            UnselectListView(Resource.Id.sourceListView);
+
+            MakeControlVisible(Resource.Id.sourceTextView);
+            MakeControlInvisible(Resource.Id.destinationTextView);
+            MakeControlInvisible(Resource.Id.switchButton);
+
+            SetListViewContent(Resource.Id.destinationListView, new List<ISpeaker>());
+
+            MakeControlInvisible(Resource.Id.progressBar1);
+        }
+
+        private void UnselectListView(int controlId)
+        {
+            FindViewById<ListView>(controlId).Selected = false;
+        }
+
+        private void SetListViewContent(int controlId, IList<ISpeaker> content)
+        {
+            FindViewById<ListView>(controlId).Adapter = new ArrayAdapter<ISpeaker>(this, Android.Resource.Layout.SimpleListItem1, content);
+        }
+
+        private void MakeControlInvisible(int controlId)
+        {
+            FindViewById(controlId).Visibility = ViewStates.Invisible;
+        }
+
+        private void MakeControlVisible(int controlId)
+        {
+            FindViewById(controlId).Visibility = ViewStates.Visible;
         }
 
         private async void SwitchButtonOnClick(object sender, EventArgs e)
         {
+            MakeControlVisible(Resource.Id.progressBar1);
+
             await SelectedSourceSpeaker.ShiftToSpeakerAsync(SelectedDestinationSpeaker);
+
+            MakeControlInvisible(Resource.Id.progressBar1);
+            
+            await LoadAsync();
         }
     }
 }

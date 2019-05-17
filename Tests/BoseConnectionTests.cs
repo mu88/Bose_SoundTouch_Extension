@@ -16,6 +16,7 @@ namespace Tests
         public async Task TurnOff()
         {
             var httpMock = new MockHttpMessageHandler();
+            httpMock.Expect(HttpMethod.Get, "http://1.2.3.4:8090/now_playing").Respond("application/xml", "<ContentItem source=\"TUNEIN\"");
             httpMock.Expect(HttpMethod.Post, "http://1.2.3.4:8090/key")
                     .WithContent("<key state=\"press\" sender=\"Gabbo\">POWER</key>")
                     .Respond(HttpStatusCode.Created);
@@ -33,12 +34,12 @@ namespace Tests
         }
 
         [Test]
-        [Ignore("Not yet ready")]
         public async Task GetCurrentContentAsync()
         {
-            const string rawXmlContent = "<myContent />";
+            const string rawXmlContent = "<ContentItem><itemName>MyItem</itemName></ContentItem>";
+            var rawXmlResponse = $"<nowPlaying>{rawXmlContent}</nowPlaying>";
             var httpMock = new MockHttpMessageHandler();
-            httpMock.Expect(HttpMethod.Get, "http://1.2.3.4:8090/now_playing").Respond("application/xml", rawXmlContent);
+            httpMock.Expect(HttpMethod.Get, "http://1.2.3.4:8090/now_playing").Respond("application/xml", rawXmlResponse);
             var deviceMock = new Mock<ISpeaker>();
             deviceMock.Setup(x => x.IpAddress).Returns("1.2.3.4");
             var httpClient = new HttpClient(httpMock);

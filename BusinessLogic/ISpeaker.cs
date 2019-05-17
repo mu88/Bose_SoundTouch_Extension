@@ -6,13 +6,13 @@ namespace BusinessLogic
     {
         string Name { get; }
 
-        Task<PowerState> PowerState { get; }
-
-        bool IsPlaying { get; }
-
-        Task<IContent> CurrentlyPlaying { get; }
-
         string IpAddress { get; }
+
+        Task<PowerState> GetPowerStateAsync();
+
+        Task<bool> IsPlayingAsync();
+
+        Task<IContent> CurrentlyPlayingAsync();
 
         Task ShiftToSpeakerAsync(ISpeaker otherSpeaker);
 

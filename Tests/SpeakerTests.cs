@@ -23,10 +23,10 @@ namespace Tests
 
             await testee.ShiftToSpeakerAsync(otherSpeaker);
 
-            otherSpeaker.PowerState.Should().Be(PowerState.TurnedOn);
-            otherSpeaker.IsPlaying.Should().BeTrue();
-            otherSpeaker.CurrentlyPlaying.Should().Be(content);
-            testee.PowerState.Should().Be(PowerState.TurnedOff);
+            (await otherSpeaker.GetPowerStateAsync()).Should().Be(PowerState.TurnedOn);
+            (await otherSpeaker.IsPlayingAsync()).Should().BeTrue();
+            (await otherSpeaker.CurrentlyPlayingAsync()).Should().Be(content);
+            (await testee.GetPowerStateAsync()).Should().Be(PowerState.TurnedOff);
             connectionMock.Verify(x => x.PlayAsync(otherSpeaker, content), Times.Once);
         }
 
@@ -39,7 +39,7 @@ namespace Tests
             await testee.TurnOffAsync();
 
             connectionMock.Verify(x => x.TurnOffAsync(testee), Times.Once);
-            testee.PowerState.Should().Be(PowerState.TurnedOff);
+            (await testee.GetPowerStateAsync()).Should().Be(PowerState.TurnedOff);
         }
 
         [Test]
@@ -53,8 +53,8 @@ namespace Tests
             await testee.PlayAsync(content);
 
             connectionMock.Verify(x => x.PlayAsync(testee, content), Times.Once);
-            testee.CurrentlyPlaying.Should().Be(content);
-            testee.IsPlaying.Should().BeTrue();
+            (await testee.CurrentlyPlayingAsync()).Should().Be(content);
+            (await testee.IsPlayingAsync()).Should().BeTrue();
         }
     }
 }

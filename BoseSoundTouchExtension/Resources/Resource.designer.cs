@@ -2501,11 +2501,11 @@ namespace BoseSoundTouchExtension
 			// aapt resource value: 0x7f08009b
 			public const int design_navigation_view = 2131230875;
 			
-			// aapt resource value: 0x7f080091
-			public const int destinationListView = 2131230865;
-			
 			// aapt resource value: 0x7f080090
-			public const int destinationTextView = 2131230864;
+			public const int destinationListView = 2131230864;
+			
+			// aapt resource value: 0x7f08008f
+			public const int destinationTextView = 2131230863;
 			
 			// aapt resource value: 0x7f080020
 			public const int disableHome = 2131230752;
@@ -2597,9 +2597,6 @@ namespace BoseSoundTouchExtension
 			// aapt resource value: 0x7f080061
 			public const int list_item = 2131230817;
 			
-			// aapt resource value: 0x7f08008c
-			public const int loadButton = 2131230860;
-			
 			// aapt resource value: 0x7f0800b5
 			public const int masked = 2131230901;
 			
@@ -2650,6 +2647,9 @@ namespace BoseSoundTouchExtension
 			
 			// aapt resource value: 0x7f08004d
 			public const int pin = 2131230797;
+			
+			// aapt resource value: 0x7f080091
+			public const int progressBar1 = 2131230865;
 			
 			// aapt resource value: 0x7f080006
 			public const int progress_circular = 2131230726;
@@ -2753,11 +2753,11 @@ namespace BoseSoundTouchExtension
 			// aapt resource value: 0x7f080043
 			public const int snap = 2131230787;
 			
-			// aapt resource value: 0x7f08008f
-			public const int sourceListView = 2131230863;
-			
 			// aapt resource value: 0x7f08008e
-			public const int sourceTextView = 2131230862;
+			public const int sourceListView = 2131230862;
+			
+			// aapt resource value: 0x7f08008d
+			public const int sourceTextView = 2131230861;
 			
 			// aapt resource value: 0x7f080064
 			public const int spacer = 2131230820;
@@ -2786,8 +2786,8 @@ namespace BoseSoundTouchExtension
 			// aapt resource value: 0x7f080087
 			public const int submit_area = 2131230855;
 			
-			// aapt resource value: 0x7f08008d
-			public const int switchButton = 2131230861;
+			// aapt resource value: 0x7f08008c
+			public const int switchButton = 2131230860;
 			
 			// aapt resource value: 0x7f08001f
 			public const int tabMode = 2131230751;

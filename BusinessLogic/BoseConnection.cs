@@ -7,6 +7,8 @@ namespace BusinessLogic
 {
     public class BoseConnection : IConnection
     {
+        // TODO mu88: XML deserialize
+
         public BoseConnection(HttpClient httpClient)
         {
             HttpClient = httpClient;
@@ -17,43 +19,57 @@ namespace BusinessLogic
         /// <inheritdoc />
         public async Task TurnOffAsync(ISpeaker speaker)
         {
-            await HttpClient.PostAsync($"http://{speaker.IpAddress}:8090/key",
-                                       new StringContent("<key state=\"press\" sender=\"Gabbo\">POWER</key>"));
+            if (await GetPowerStateAsync(speaker) == PowerState.TurnedOn)
+            {
+                await HttpClient.PostAsync($"http://{speaker.IpAddress}:8090/key",
+                                           new StringContent("<key state=\"press\" sender=\"Gabbo\">POWER</key>"));
 
-            await HttpClient.PostAsync($"http://{speaker.IpAddress}:8090/key",
-                                       new StringContent("<key state=\"release\" sender=\"Gabbo\">POWER</key>"));
+                await HttpClient.PostAsync($"http://{speaker.IpAddress}:8090/key",
+                                           new StringContent("<key state=\"release\" sender=\"Gabbo\">POWER</key>"));
+            }
         }
 
         /// <inheritdoc />
         public async Task<PowerState> GetPowerStateAsync(ISpeaker speaker)
         {
-            var rawXmlResponse = await HttpClient.GetStringAsync($"http://{speaker.IpAddress}:8090/now_playing");
+            var response = await HttpClient.GetStringAsync($"http://{speaker.IpAddress}:8090/now_playing");
 
-            return rawXmlResponse.Contains("source=\"STANDBY\"") ? PowerState.TurnedOff : PowerState.TurnedOn;
+            return response.Contains("source=\"STANDBY\"") ? PowerState.TurnedOff : PowerState.TurnedOn;
         }
 
         /// <inheritdoc />
         public async Task PlayAsync(ISpeaker speaker, IContent content)
         {
-            var httpResponseMessage = await HttpClient.PostAsync($"http://{speaker.IpAddress}:8090/select",
-                                                                 new StringContent(content.RawContent, Encoding.UTF8, "text/xml"));
+            if (HttpClient == null)
+            {
+                return;
+            }
+
+            if (speaker == null)
+            {
+                return;
+            }
+
+            if (content == null)
+            {
+                return;
+            }
+
+            await HttpClient.PostAsync($"http://{speaker.IpAddress}:8090/select",
+                                       new StringContent(content.RawContent, Encoding.UTF8, "text/xml"));
         }
 
         /// <inheritdoc />
         public async Task<IContent> GetCurrentContentAsync(ISpeaker speaker)
         {
-            var rawXmlString = await HttpClient.GetStringAsync($"http://{speaker.IpAddress}:8090/now_playing");
-            
+            var response = await HttpClient.GetStringAsync($"http://{speaker.IpAddress}:8090/now_playing");
+
             var xmlDocument = new XmlDocument();
-            xmlDocument.LoadXml(rawXmlString);
+            xmlDocument.LoadXml(response);
 
-            var xmlElement = xmlDocument["nowPlaying"];
-            var element = xmlElement["ContentItem"];
+            var content = xmlDocument["nowPlaying"]?["ContentItem"]?.OuterXml;
 
-            var elementInnerXml = element.InnerXml;
-            var elementOuterXml = element.OuterXml;
-
-            return new Content(elementOuterXml);
+            return !response.Contains("source=\"STANDBY\"") ? new Content(content) : null;
         }
     }
 }
