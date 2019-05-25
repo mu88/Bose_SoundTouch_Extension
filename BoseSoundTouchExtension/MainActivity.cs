@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Android.App;
 using Android.OS;
 using Android.Support.V7.App;
@@ -73,9 +72,9 @@ namespace BoseSoundTouchExtension
             LoadAsync();
         }
 
-        private async void LoadButtonOnClick(object sender, EventArgs e)
+        private void LoadButtonOnClick(object sender, EventArgs e)
         {
-            await LoadAsync();
+            LoadAsync();
         }
 
         private void DestinationListViewOnItemClick(object sender, AdapterView.ItemClickEventArgs e)
@@ -100,11 +99,11 @@ namespace BoseSoundTouchExtension
             UnselectListView(Resource.Id.destinationListView);
         }
 
-        private async Task LoadAsync()
+        private void LoadAsync()
         {
             ShowProgressBar();
 
-            Speakers = (await SpeakerResolver.ResolveSpeakersAsync()).ToList();
+            Speakers = SpeakerResolver.ResolveSpeakersAsync().ToList();
 
             if (!Speakers.Any())
             {
@@ -118,7 +117,7 @@ namespace BoseSoundTouchExtension
             PlayingSpeakers = new List<ISpeaker>();
             foreach (var speaker in Speakers)
             {
-                if (await speaker.IsPlayingAsync())
+                if (speaker.IsPlayingAsync())
                 {
                     PlayingSpeakers.Add(speaker);
                 }
@@ -192,15 +191,15 @@ namespace BoseSoundTouchExtension
             FindViewById(controlId).Visibility = ViewStates.Visible;
         }
 
-        private async void SwitchButtonOnClick(object sender, EventArgs e)
+        private void SwitchButtonOnClick(object sender, EventArgs e)
         {
             ShowProgressBar();
 
-            await SelectedSourceSpeaker.ShiftToSpeakerAsync(SelectedDestinationSpeaker);
+            SelectedSourceSpeaker.ShiftToSpeakerAsync(SelectedDestinationSpeaker);
 
             HideProgressBar();
 
-            await LoadAsync();
+            LoadAsync();
         }
     }
 }

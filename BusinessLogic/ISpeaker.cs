@@ -1,6 +1,4 @@
-﻿using System.Threading.Tasks;
-
-namespace BusinessLogic
+﻿namespace BusinessLogic
 {
     public interface ISpeaker
     {
@@ -8,16 +6,16 @@ namespace BusinessLogic
 
         string IpAddress { get; }
 
-        Task<PowerState> GetPowerStateAsync();
+        PowerState GetPowerStateAsync();
 
-        Task<bool> IsPlayingAsync();
+        bool IsPlayingAsync();
 
-        Task<IContent> CurrentlyPlayingAsync();
+        IContent CurrentlyPlayingAsync();
 
-        Task ShiftToSpeakerAsync(ISpeaker otherSpeaker);
+        void ShiftToSpeakerAsync(ISpeaker otherSpeaker);
 
-        Task TurnOffAsync();
+        void TurnOffAsync();
 
-        Task PlayAsync(IContent content);
+        void PlayAsync(IContent content);
     }
 }

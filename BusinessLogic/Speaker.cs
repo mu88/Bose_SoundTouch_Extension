@@ -1,6 +1,4 @@
-﻿using System.Threading.Tasks;
-
-namespace BusinessLogic
+﻿namespace BusinessLogic
 {
     public class Speaker : ISpeaker
     {
@@ -9,6 +7,13 @@ namespace BusinessLogic
             Name = name;
             IpAddress = ipAddress;
             Connection = connection;
+        }
+
+        public Speaker(string ipAddress, IConnection connection)
+        {
+            IpAddress = ipAddress;
+            Connection = connection;
+            Name = Connection.GetName(this);
         }
 
         public string Name { get; }
@@ -58,40 +63,40 @@ namespace BusinessLogic
         }
 
         /// <inheritdoc />
-        public async Task<PowerState> GetPowerStateAsync()
+        public PowerState GetPowerStateAsync()
         {
-            return await Connection.GetPowerStateAsync(this);
+            return Connection.GetPowerStateAsync(this);
         }
 
         /// <inheritdoc />
-        public async Task<bool> IsPlayingAsync()
+        public bool IsPlayingAsync()
         {
-            return await CurrentlyPlayingAsync() != null;
+            return CurrentlyPlayingAsync() != null;
         }
 
         /// <inheritdoc />
-        public async Task<IContent> CurrentlyPlayingAsync()
+        public IContent CurrentlyPlayingAsync()
         {
-            return await Connection.GetCurrentContentAsync(this);
+            return Connection.GetCurrentContentAsync(this);
         }
 
-        public async Task ShiftToSpeakerAsync(ISpeaker otherSpeaker)
+        public void ShiftToSpeakerAsync(ISpeaker otherSpeaker)
         {
-            await otherSpeaker.PlayAsync(await CurrentlyPlayingAsync());
-            
-            await TurnOffAsync();
+            otherSpeaker.PlayAsync(CurrentlyPlayingAsync());
 
-            await Task.Delay(1000); // to make sure that the other speaker has initialized itself successfully
+            TurnOffAsync();
+
+            //Task.Delay(1000); // to make sure that the other speaker has initialized itself successfully
         }
 
-        public async Task TurnOffAsync()
+        public void TurnOffAsync()
         {
-            await Connection.TurnOffAsync(this);
+            Connection.TurnOffAsync(this);
         }
 
-        public async Task PlayAsync(IContent content)
+        public void PlayAsync(IContent content)
         {
-            await Connection.PlayAsync(this, content);
+            Connection.PlayAsync(this, content);
         }
 
         /// <inheritdoc />
