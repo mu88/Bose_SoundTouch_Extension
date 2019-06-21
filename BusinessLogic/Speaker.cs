@@ -78,7 +78,7 @@ namespace BusinessLogic
         public async Task ShiftToSpeakerAsync(ISpeaker otherSpeaker)
         {
             await otherSpeaker.PlayAsync(await CurrentlyPlayingAsync());
-            
+
             await TurnOffAsync();
 
             await Task.Delay(1000); // to make sure that the other speaker has initialized itself successfully
