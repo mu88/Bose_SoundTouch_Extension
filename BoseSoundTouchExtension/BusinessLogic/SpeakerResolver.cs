@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Net;
 using System.Net.Http;
 using System.Net.Sockets;
@@ -45,6 +46,9 @@ namespace BoseSoundTouchExtension.BusinessLogic
 
                 var receiveBuffer = new byte[64000];
 
+                var stopwatch = new Stopwatch();
+                stopwatch.Start();
+
                 var continueWaiting = true;
                 while (continueWaiting)
                 {
@@ -62,6 +66,12 @@ namespace BoseSoundTouchExtension.BusinessLogic
                                 continueWaiting = false;
                             }
                         }
+                    }
+
+                    if (stopwatch.ElapsedMilliseconds > 15000)
+                    {
+                        stopwatch.Stop();
+                        continueWaiting = false;
                     }
                 }
             }
