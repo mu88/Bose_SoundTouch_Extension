@@ -1,15 +1,17 @@
-﻿namespace BusinessLogic
+﻿using System.Threading.Tasks;
+
+namespace BusinessLogic
 {
     public interface IConnection
     {
-        string GetName(ISpeaker speaker);
+        Task<string> GetNameAsync(ISpeaker speaker);
 
-        void TurnOffAsync(ISpeaker speaker);
+        Task TurnOffAsync(ISpeaker speaker);
 
-        PowerState GetPowerStateAsync(ISpeaker speaker);
+        Task<PowerState> GetPowerStateAsync(ISpeaker speaker);
 
-        void PlayAsync(ISpeaker speaker, IContent content);
+        Task PlayAsync(ISpeaker speaker, IContent content);
 
-        IContent GetCurrentContentAsync(ISpeaker speaker);
+        Task<IContent> GetCurrentContentAsync(ISpeaker speaker);
     }
 }

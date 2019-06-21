@@ -1,4 +1,6 @@
-﻿namespace BusinessLogic
+﻿using System.Threading.Tasks;
+
+namespace BusinessLogic
 {
     public class Speaker : ISpeaker
     {
@@ -56,40 +58,40 @@
         }
 
         /// <inheritdoc />
-        public PowerState GetPowerStateAsync()
+        public Task<PowerState> GetPowerStateAsync()
         {
             return Connection.GetPowerStateAsync(this);
         }
 
         /// <inheritdoc />
-        public bool IsPlayingAsync()
+        public async Task<bool> IsPlayingAsync()
         {
-            return CurrentlyPlayingAsync() != null;
+            return await CurrentlyPlayingAsync() != null;
         }
 
         /// <inheritdoc />
-        public IContent CurrentlyPlayingAsync()
+        public Task<IContent> CurrentlyPlayingAsync()
         {
             return Connection.GetCurrentContentAsync(this);
         }
 
-        public void ShiftToSpeakerAsync(ISpeaker otherSpeaker)
+        public async Task ShiftToSpeakerAsync(ISpeaker otherSpeaker)
         {
-            otherSpeaker.PlayAsync(CurrentlyPlayingAsync());
+            await otherSpeaker.PlayAsync(await CurrentlyPlayingAsync());
 
-            TurnOffAsync();
+            await TurnOffAsync();
 
-            //Task.Delay(1000); // to make sure that the other speaker has initialized itself successfully
+            await Task.Delay(1000); // to make sure that the other speaker has initialized itself successfully
         }
 
-        public void TurnOffAsync()
+        public async Task TurnOffAsync()
         {
-            Connection.TurnOffAsync(this);
+            await Connection.TurnOffAsync(this);
         }
 
-        public void PlayAsync(IContent content)
+        public async Task PlayAsync(IContent content)
         {
-            Connection.PlayAsync(this, content);
+            await Connection.PlayAsync(this, content);
         }
 
         /// <inheritdoc />

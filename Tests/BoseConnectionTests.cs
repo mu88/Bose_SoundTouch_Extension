@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Net.Http;
+using System.Threading.Tasks;
 using BusinessLogic;
 using FluentAssertions;
 using Moq;
@@ -12,7 +13,7 @@ namespace Tests
     public class BoseConnectionTests
     {
         [Test]
-        public void TurnOff()
+        public async Task TurnOff()
         {
             var httpMock = new MockHttpMessageHandler();
             httpMock.Expect(HttpMethod.Get, "http://1.2.3.4:8090/now_playing").Respond("application/xml", "<ContentItem source=\"TUNEIN\"");
@@ -27,13 +28,13 @@ namespace Tests
             var httpClient = new HttpClient(httpMock);
             var testee = new BoseConnection(httpClient);
 
-            testee.TurnOffAsync(deviceMock.Object);
+            await testee.TurnOffAsync(deviceMock.Object);
 
             httpMock.VerifyNoOutstandingExpectation();
         }
 
         [Test]
-        public void GetCurrentContentAsync()
+        public async Task GetCurrentContentAsync()
         {
             const string rawXmlContent = "<ContentItem><itemName>MyItem</itemName></ContentItem>";
             var rawXmlResponse = $"<nowPlaying>{rawXmlContent}</nowPlaying>";
@@ -44,14 +45,14 @@ namespace Tests
             var httpClient = new HttpClient(httpMock);
             var testee = new BoseConnection(httpClient);
 
-            var result = testee.GetCurrentContentAsync(deviceMock.Object);
+            var result = await testee.GetCurrentContentAsync(deviceMock.Object);
 
             result.RawContent.Should().Be(rawXmlContent);
             httpMock.VerifyNoOutstandingExpectation();
         }
 
         [Test]
-        public void PlayAsync()
+        public async Task PlayAsync()
         {
             const string rawXmlContent = "<myContent />";
             var httpMock = new MockHttpMessageHandler();
@@ -61,13 +62,13 @@ namespace Tests
             var httpClient = new HttpClient(httpMock);
             var testee = new BoseConnection(httpClient);
 
-            testee.PlayAsync(deviceMock.Object, new Content(rawXmlContent));
+            await testee.PlayAsync(deviceMock.Object, new Content(rawXmlContent));
 
             httpMock.VerifyNoOutstandingExpectation();
         }
 
         [Test]
-        public void GetPowerStateAsync()
+        public async Task GetPowerStateAsync()
         {
             const string rawXmlContent = "<ContentItem source=\"STANDBY\"";
             var httpMock = new MockHttpMessageHandler();
@@ -77,7 +78,7 @@ namespace Tests
             var httpClient = new HttpClient(httpMock);
             var testee = new BoseConnection(httpClient);
 
-            var result = testee.GetPowerStateAsync(deviceMock.Object);
+            var result = await testee.GetPowerStateAsync(deviceMock.Object);
 
             result.Should().Be(PowerState.TurnedOff);
             httpMock.VerifyNoOutstandingExpectation();
