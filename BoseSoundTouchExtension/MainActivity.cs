@@ -118,7 +118,7 @@ namespace BoseSoundTouchExtension
             PlayingSpeakers = new List<ISpeaker>();
             foreach (var speaker in Speakers)
             {
-                if (await speaker.IsPlayingAsync())
+                if (speaker.IsPlayingAsync())
                 {
                     PlayingSpeakers.Add(speaker);
                 }
@@ -196,7 +196,7 @@ namespace BoseSoundTouchExtension
         {
             ShowProgressBar();
 
-            await SelectedSourceSpeaker.ShiftToSpeakerAsync(SelectedDestinationSpeaker);
+            SelectedSourceSpeaker.ShiftToSpeakerAsync(SelectedDestinationSpeaker);
 
             HideProgressBar();
 

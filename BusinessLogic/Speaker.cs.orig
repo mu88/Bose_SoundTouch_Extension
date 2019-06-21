@@ -9,6 +9,13 @@
             Connection = connection;
         }
 
+        public Speaker(string ipAddress, IConnection connection)
+        {
+            IpAddress = ipAddress;
+            Connection = connection;
+            Name = Connection.GetName(this);
+        }
+
         public string Name { get; }
 
         public string IpAddress { get; }
@@ -75,9 +82,15 @@
 
         public void ShiftToSpeakerAsync(ISpeaker otherSpeaker)
         {
+<<<<<<< HEAD
+            await otherSpeaker.PlayAsync(await CurrentlyPlayingAsync());
+
+            await TurnOffAsync();
+=======
             otherSpeaker.PlayAsync(CurrentlyPlayingAsync());
 
             TurnOffAsync();
+>>>>>>> origin/master
 
             //Task.Delay(1000); // to make sure that the other speaker has initialized itself successfully
         }

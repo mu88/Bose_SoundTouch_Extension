@@ -1,6 +1,6 @@
 ﻿using System.Net.Http;
 using System.Text;
-using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 using System.Xml;
 
 namespace BusinessLogic
@@ -17,37 +17,55 @@ namespace BusinessLogic
         private HttpClient HttpClient { get; }
 
         /// <inheritdoc />
-        public async Task TurnOffAsync(ISpeaker speaker)
+        public string GetName(ISpeaker speaker)
         {
-            if (await GetPowerStateAsync(speaker) == PowerState.TurnedOn)
+            var response = HttpClient.GetStringAsync($"http://{speaker.IpAddress}:8090/info").Result;
+            var match = new Regex("<name>(.*)</name>").Match(response);
+            if (match.Success && match.Groups.Count == 2)
             {
-                await HttpClient.PostAsync($"http://{speaker.IpAddress}:8090/key",
-                                           new StringContent("<key state=\"press\" sender=\"Gabbo\">POWER</key>"));
-
-                await HttpClient.PostAsync($"http://{speaker.IpAddress}:8090/key",
-                                           new StringContent("<key state=\"release\" sender=\"Gabbo\">POWER</key>"));
+                return match.Groups[1].Value;
+            }
+            else
+            {
+                return "Unknown";
             }
         }
 
         /// <inheritdoc />
-        public async Task<PowerState> GetPowerStateAsync(ISpeaker speaker)
+        public void TurnOffAsync(ISpeaker speaker)
         {
-            var response = await HttpClient.GetStringAsync($"http://{speaker.IpAddress}:8090/now_playing");
+            if (GetPowerStateAsync(speaker) == PowerState.TurnedOn)
+            {
+                HttpClient.PostAsync($"http://{speaker.IpAddress}:8090/key",
+                                     new StringContent("<key state=\"press\" sender=\"Gabbo\">POWER</key>"))
+                          .Wait();
+
+                HttpClient.PostAsync($"http://{speaker.IpAddress}:8090/key",
+                                     new StringContent("<key state=\"release\" sender=\"Gabbo\">POWER</key>"))
+                          .Wait();
+            }
+        }
+
+        /// <inheritdoc />
+        public PowerState GetPowerStateAsync(ISpeaker speaker)
+        {
+            var response = HttpClient.GetStringAsync($"http://{speaker.IpAddress}:8090/now_playing").Result;
 
             return response.Contains("source=\"STANDBY\"") ? PowerState.TurnedOff : PowerState.TurnedOn;
         }
 
         /// <inheritdoc />
-        public async Task PlayAsync(ISpeaker speaker, IContent content)
+        public void PlayAsync(ISpeaker speaker, IContent content)
         {
-            await HttpClient.PostAsync($"http://{speaker.IpAddress}:8090/select",
-                                       new StringContent(content.RawContent, Encoding.UTF8, "text/xml"));
+            HttpClient.PostAsync($"http://{speaker.IpAddress}:8090/select",
+                                 new StringContent(content.RawContent, Encoding.UTF8, "text/xml"))
+                      .Wait();
         }
 
         /// <inheritdoc />
-        public async Task<IContent> GetCurrentContentAsync(ISpeaker speaker)
+        public IContent GetCurrentContentAsync(ISpeaker speaker)
         {
-            var response = await HttpClient.GetStringAsync($"http://{speaker.IpAddress}:8090/now_playing");
+            var response = HttpClient.GetStringAsync($"http://{speaker.IpAddress}:8090/now_playing").Result;
 
             var xmlDocument = new XmlDocument();
             xmlDocument.LoadXml(response);
