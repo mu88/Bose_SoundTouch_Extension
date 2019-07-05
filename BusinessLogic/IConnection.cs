@@ -4,7 +4,7 @@ namespace BusinessLogic
 {
     public interface IConnection
     {
-        Task<string> GetNameAsync(ISpeaker speaker);
+        Task<(string, string)> GetBasicInfoAsync(string ipAddress);
 
         Task TurnOffAsync(ISpeaker speaker);
 
@@ -13,5 +13,7 @@ namespace BusinessLogic
         Task PlayAsync(ISpeaker speaker, IContent content);
 
         Task<IContent> GetCurrentContentAsync(ISpeaker speaker);
+
+        Task<NowPlaying> NowPlayingAsync(ISpeaker speaker);
     }
 }

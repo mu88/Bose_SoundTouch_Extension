@@ -8,11 +8,15 @@ namespace BusinessLogic
 
         string IpAddress { get; }
 
+        string MacAddress { get; }
+
         Task<PowerState> GetPowerStateAsync();
 
         Task<bool> IsPlayingAsync();
 
         Task<IContent> CurrentlyPlayingAsync();
+
+        Task<NowPlaying> NowPlayingAsync();
 
         Task ShiftToSpeakerAsync(ISpeaker otherSpeaker);
 

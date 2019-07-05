@@ -1,8 +1,10 @@
-﻿using System.Net.Http;
+﻿using System.IO;
+using System.Net.Http;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml;
+using System.Xml.Serialization;
 
 namespace BusinessLogic
 {
@@ -16,21 +18,6 @@ namespace BusinessLogic
         }
 
         private HttpClient HttpClient { get; }
-
-        /// <inheritdoc />
-        public async Task<string> GetNameAsync(ISpeaker speaker)
-        {
-            var response = await HttpClient.GetStringAsync($"http://{speaker.IpAddress}:8090/info");
-            var match = new Regex("<name>(.*)</name>").Match(response);
-            if (match.Success && match.Groups.Count == 2)
-            {
-                return match.Groups[1].Value;
-            }
-            else
-            {
-                return "Unknown";
-            }
-        }
 
         /// <inheritdoc />
         public async Task TurnOffAsync(ISpeaker speaker)
@@ -73,6 +60,43 @@ namespace BusinessLogic
             var content = xmlDocument["nowPlaying"]?["ContentItem"]?.OuterXml;
 
             return !response.Contains("source=\"STANDBY\"") ? new Content(content) : null;
+        }
+
+        /// <inheritdoc />
+        public async Task<NowPlaying> NowPlayingAsync(ISpeaker speaker)
+        {
+            var response = await HttpClient.GetStringAsync($"http://{speaker.IpAddress}:8090/now_playing");
+
+            var serializer = new XmlSerializer(typeof(NowPlaying));
+            NowPlaying result;
+            using (TextReader reader = new StringReader(response))
+            {
+                result = (NowPlaying)serializer.Deserialize(reader);
+            }
+
+            return result;
+        }
+
+        /// <inheritdoc />
+        public async Task<(string, string)> GetBasicInfoAsync(string ipAddress)
+        {
+            var name = "Unknown";
+            var macAddress = string.Empty;
+
+            var response = await HttpClient.GetStringAsync($"http://{ipAddress}:8090/info");
+            var nameMatch = new Regex(@"<name>(\w*)</name>").Match(response);
+            var macAddressMatch = new Regex(@"deviceID=\""(\w*)\""").Match(response);
+            if (nameMatch.Success && nameMatch.Groups.Count == 2)
+            {
+                name = nameMatch.Groups[1].Value;
+            }
+
+            if (macAddressMatch.Success && macAddressMatch.Groups.Count == 2)
+            {
+                macAddress = macAddressMatch.Groups[1].Value;
+            }
+
+            return (name, macAddress);
         }
     }
 }

@@ -5,6 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="WebSocketSharp.CustomHeaders.Standard" Version="1.0.2" />
     <PackageReference Include="Zeroconf" Version="3.0.30" />
   </ItemGroup>
 

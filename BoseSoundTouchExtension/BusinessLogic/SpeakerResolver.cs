@@ -77,27 +77,23 @@ namespace BoseSoundTouchExtension.BusinessLogic
             }
 
             var results = new Collection<ISpeaker>();
-            var httpClient = new HttpClient();
-            var boseConnection = new BoseConnection(httpClient);
 
             foreach (var ipAddress in ipAddresses)
             {
-                results.Add(new Speaker(await GetNameAsync(httpClient, ipAddress), ipAddress, boseConnection));
+                results.Add(await ConstructSpeaker(ipAddress));
             }
 
             return results;
         }
 
-        private async Task<string> GetNameAsync(HttpClient httpClient, string ipAddress)
+        private async Task<Speaker> ConstructSpeaker(string ipAddress)
         {
-            var response = await httpClient.GetStringAsync($"http://{ipAddress}:8090/info");
-            var match = new Regex("<name>(.*)</name>").Match(response);
-            if (match.Success && match.Groups.Count == 2)
-            {
-                return match.Groups[1].Value;
-            }
+            var httpClient = new HttpClient();
+            var boseConnection = new BoseConnection(httpClient);
 
-            return "Unknown";
+            var (name, macAddress) = await boseConnection.GetBasicInfoAsync(ipAddress);
+
+            return new Speaker(name, ipAddress, macAddress, boseConnection);
         }
 
         private IEnumerable<ISpeaker> GetSpeakersViaZeroconf()
@@ -114,7 +110,7 @@ namespace BoseSoundTouchExtension.BusinessLogic
                 var boseConnection = new BoseConnection(new HttpClient());
                 foreach (var zeroconfHost in zeroconfHosts)
                 {
-                    results.Add(new Speaker(zeroconfHost.DisplayName, zeroconfHost.IPAddress, boseConnection));
+                    results.Add(new Speaker(zeroconfHost.DisplayName, zeroconfHost.IPAddress, "", boseConnection));
                 }
             }
             finally

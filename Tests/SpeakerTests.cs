@@ -14,8 +14,8 @@ namespace Tests
             var content = new Mock<IContent>().Object;
             var connectionMock = new Mock<IConnection>();
             var connection = connectionMock.Object;
-            var otherSpeaker = new Speaker("Speaker2", "127.0.0.1", connection);
-            var testee = new Speaker("Speaker1", "127.0.0.1", connection);
+            var otherSpeaker = new Speaker("Speaker2", "127.0.0.1", "", connection);
+            var testee = new Speaker("Speaker1", "127.0.0.1", "", connection);
             connectionMock.Setup(x => x.GetPowerStateAsync(otherSpeaker)).ReturnsAsync(PowerState.TurnedOn);
             connectionMock.Setup(x => x.GetCurrentContentAsync(otherSpeaker)).ReturnsAsync(content);
             connectionMock.Setup(x => x.GetCurrentContentAsync(testee)).ReturnsAsync(content);
@@ -34,7 +34,7 @@ namespace Tests
         public async Task TurnOff()
         {
             var connectionMock = new Mock<IConnection>();
-            var testee = new Speaker("Speaker1", "127.0.0.1", connectionMock.Object);
+            var testee = new Speaker("Speaker1", "127.0.0.1", "", connectionMock.Object);
 
             await testee.TurnOffAsync();
 
@@ -47,7 +47,7 @@ namespace Tests
         {
             var content = new Mock<IContent>().Object;
             var connectionMock = new Mock<IConnection>();
-            var testee = new Speaker("Speaker1", "127.0.0.1", connectionMock.Object);
+            var testee = new Speaker("Speaker1", "127.0.0.1", "", connectionMock.Object);
             connectionMock.Setup(x => x.GetCurrentContentAsync(testee)).ReturnsAsync(content);
 
             await testee.PlayAsync(content);
