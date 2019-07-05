@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using BusinessLogic.DTO;
 
 namespace BusinessLogic
 {
@@ -70,7 +71,7 @@ namespace BusinessLogic
         }
 
         /// <inheritdoc />
-        public Task<IContent> CurrentlyPlayingAsync()
+        public Task<ContentItem> CurrentlyPlayingAsync()
         {
             return Connection.GetCurrentContentAsync(this);
         }
@@ -89,7 +90,7 @@ namespace BusinessLogic
             await Connection.TurnOffAsync(this);
         }
 
-        public async Task PlayAsync(IContent content)
+        public async Task PlayAsync(ContentItem content)
         {
             await Connection.PlayAsync(this, content);
         }

@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Android.Content;
 using Android.Net.Wifi;
 using BusinessLogic;
+using BusinessLogic.DTO;
 using Zeroconf;
 using ProtocolType = System.Net.Sockets.ProtocolType;
 
@@ -91,13 +92,10 @@ namespace BoseSoundTouchExtension.BusinessLogic
         private async Task<string> GetNameAsync(HttpClient httpClient, string ipAddress)
         {
             var response = await httpClient.GetStringAsync($"http://{ipAddress}:8090/info");
-            var match = new Regex("<name>(.*)</name>").Match(response);
-            if (match.Success && match.Groups.Count == 2)
-            {
-                return match.Groups[1].Value;
-            }
 
-            return "Unknown";
+            var info = SerializationHelper.Deserialize<Info>(response);
+
+            return info.Name;
         }
 
         private IEnumerable<ISpeaker> GetSpeakersViaZeroconf()

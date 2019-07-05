@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using BusinessLogic.DTO;
 
 namespace BusinessLogic
 {
@@ -12,12 +13,12 @@ namespace BusinessLogic
 
         Task<bool> IsPlayingAsync();
 
-        Task<IContent> CurrentlyPlayingAsync();
+        Task<ContentItem> CurrentlyPlayingAsync();
 
         Task ShiftToSpeakerAsync(ISpeaker otherSpeaker);
 
         Task TurnOffAsync();
 
-        Task PlayAsync(IContent content);
+        Task PlayAsync(ContentItem content);
     }
 }
